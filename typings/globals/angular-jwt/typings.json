@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/f01a67a8f2165f4e34eab01b6c44b869b0ac3550/angular-jwt/angular-jwt.d.ts",
+    "raw": "registry:dt/angular-jwt#0.0.0+20160906134224",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/f01a67a8f2165f4e34eab01b6c44b869b0ac3550/angular-jwt/angular-jwt.d.ts"
+  }
+}

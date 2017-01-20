@@ -1,0 +1,19 @@
+<form class="form-signin" ng-submit="login()" autocomplete="off">
+        <h2 class="form-signin-heading">サインインしてください</h2>
+        <label for="username" class="sr-only">メール</label>
+        
+        <input type="email" id="username" class="form-control" placeholder="Email address"  ng-model="username" required autofocus>
+        <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">Username is required</span>
+      
+        <label for="password" class="sr-only">パスワード</label>
+        <input type="password" id="password" class="form-control" placeholder="Password" ng-model="password" required>
+        <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
+     
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me"> 覚えている
+          </label>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">サインイン</button>
+         <a href="/" class="btn btn-link">キャンセル</a>
+      </form>
