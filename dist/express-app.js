@@ -2,7 +2,6 @@
 // Include dependencies
 var http = require('http');
 var express = require('express');
-var session = require('express-session');
 var exphbs = require('express-handlebars');
 var path = require('path');
 var logger = require('morgan');
@@ -87,7 +86,6 @@ app.use(errorHandler());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser('KKujdsOQiy-M21asVi1Nt-37anqLk6sw-ZXk5j0SXNP'));
-app.use(session({ secret: '1sPwdb8blm-he92E4JlXT-IgJY2Itcdt-s5PaRqznuw' }));
 app.use(express.static(path.join(__dirname, '/i18n')));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -103,7 +101,7 @@ var opts = {
     secretOrKey: 'bu6Jp5QiNN-KDg2Xlb1Gz-Db6Btq9pmn'
 };
 passport.use(new passport_jwt_1.Strategy(opts, function (jwt_payload, done) {
-    models_1.userModel.findOne({ username: jwt_payload.username }, function (err, user) {
+    models_1.userModel.findOne({ username: jwt_payload.sub }, function (err, user) {
         if (err) {
             return done(err, false);
         }

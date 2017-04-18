@@ -34,7 +34,9 @@ export class RegistrationService{
     constructor(private $rootScope:IRootScopeServiceGlobals,
                 private $http:ng.IHttpService, 
                 private $cookies:ng.cookies.ICookiesService)
-        {}
+        {
+            
+        }
 
         public register (username:string,password:string,callback:Function){
             

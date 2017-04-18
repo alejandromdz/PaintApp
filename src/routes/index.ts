@@ -19,7 +19,7 @@ export function login(req, res) {
     else 
     {
       if (user.get('password') === req.body.password) {
-        var token = jwt.sign({ username: user.get('username') }, 'bu6Jp5QiNN-KDg2Xlb1Gz-Db6Btq9pmn', {
+        var token = jwt.sign({ sub: user.get('username') }, 'bu6Jp5QiNN-KDg2Xlb1Gz-Db6Btq9pmn', {
           expiresIn: 6000
         });
         res.json({success: true,token: token,_id:user._id }).send();

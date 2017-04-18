@@ -3,7 +3,6 @@
 // Include dependencies
 import * as http from 'http';
 import * as express from 'express';
-import * as session from 'express-session';
 import * as exphbs from 'express-handlebars';
 import * as path from 'path';
 import * as logger from 'morgan';
@@ -103,7 +102,6 @@ app.use(errorHandler());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser('KKujdsOQiy-M21asVi1Nt-37anqLk6sw-ZXk5j0SXNP'));
-app.use(session({secret: '1sPwdb8blm-he92E4JlXT-IgJY2Itcdt-s5PaRqznuw'}));
 app.use(express.static(path.join(__dirname, '/i18n')));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -121,7 +119,7 @@ const opts={
 }
 
 passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
-  User.findOne({ username: jwt_payload.username }, function (err, user) {
+  User.findOne({ username: jwt_payload.sub }, function (err, user) {
     if (err) {
       return done(err, false);
     }
@@ -143,6 +141,7 @@ passport.deserializeUser(function (id, cb) {
     cb(null, user);
   });
 });
+
 
 app.get('/', function (req: any, res: express.Response) {
 let lang;

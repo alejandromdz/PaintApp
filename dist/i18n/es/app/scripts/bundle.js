@@ -137,6 +137,7 @@ var DashboardController = (function () {
         });
         $state.go('dashboard.home');
         $scope.layers = {};
+        $scope.chats = {};
         $scope.setLayer = function ($event, id) {
             $event.stopPropagation();
             if (!$scope.layers[id]) {
@@ -177,11 +178,28 @@ var DashboardController = (function () {
             });
         };
         $scope.createChat = function (myId, friendId) {
-            var chatScope = $scope.$new(false);
-            chatScope.myId = myId;
-            chatScope.friendId = friendId;
-            var chatWindow = $compile('<chat></chat>');
-            angular.element('body').append(chatWindow(chatScope));
+            if (!$scope.chats[friendId]) {
+                $scope.chats[friendId] = true;
+                var chatScope = $scope.$new(false);
+                chatScope.myId = myId;
+                chatScope.friendId = friendId;
+                var chatWindow = $compile('<chat></chat>');
+                angular.element('body').append(chatWindow(chatScope));
+                $scope.renderChat();
+            }
+        };
+        $scope.$on('windowChatClosed', function (ev, id) {
+            delete $scope.chats[id];
+            $scope.renderChat();
+        });
+        $scope.renderChat = function () {
+            $timeout(function () {
+                var i = 0;
+                for (var friendId in $scope.chats) {
+                    angular.element("[data-chat-id=\"" + friendId + "\"]").css('left', i * 310 + "px");
+                    i++;
+                }
+            }, 10);
         };
         var getUserData = function () {
             $http.get('/api/self').success(function (data) {
@@ -401,10 +419,11 @@ var PaintController = (function () {
 }());
 exports.PaintController = PaintController;
 var ChatController = (function () {
-    function ChatController($scope, $timeout) {
+    function ChatController($scope, $timeout, $rootScope) {
         var _this = this;
         this.$scope = $scope;
         this.$timeout = $timeout;
+        this.$rootScope = $rootScope;
         this.socket = new WebSocket('ws://' + window.location.hostname + ':8080');
         this.connection = new sharedb.Connection(this.socket);
         var myId = $scope.myId, friendId = $scope.friendId;
@@ -424,7 +443,9 @@ var ChatController = (function () {
         };
         //CHAT
         $(document).on('click', '.card-header span.icon_minim', function (e) {
+            e.stopImmediatePropagation();
             var $this = $(this);
+            console.log($this);
             if (!$this.hasClass('card-collapsed')) {
                 $this.parents('.card').find('.card-block').slideUp();
                 $this.addClass('card-collapsed');
@@ -445,7 +466,10 @@ var ChatController = (function () {
             }
         });
         $(document).on('click', '.icon_close', function (e) {
-            $(this).parent().parent().parent().parent().remove();
+            var chatWindow = $(this).parent().parent().parent().parent().parent().parent();
+            var chatId = chatWindow.data('chat-id');
+            $rootScope.$broadcast('windowChatClosed', chatId);
+            chatWindow.parent().remove();
         });
         //SHARE
         this.doc.subscribe(function (err) {
@@ -463,7 +487,7 @@ var ChatController = (function () {
             }, 0);
         });
     }
-    ChatController.$inject = ['$scope', '$timeout'];
+    ChatController.$inject = ['$scope', '$timeout', '$rootScope'];
     return ChatController;
 }());
 exports.ChatController = ChatController;

@@ -28,7 +28,7 @@ export class MainControl {
 }
 
 export class DashboardController {
-    static $inject = ['$http', '$scope', '$state', '$compile','$timeout'];
+    static $inject = ['$http', '$scope', '$state', '$compile', '$timeout'];
     constructor(private $http: ng.IHttpService,
         private $scope: any,
         private $state: ng.ui.IStateService,
@@ -36,17 +36,18 @@ export class DashboardController {
         private $timeout: ng.ITimeoutService) {
 
         const socket = IO('ws://' + window.location.hostname + ':8081');
-        
+
         socket.emit('login', { id: $scope._id });
-        
+
         socket.on('update', (users) => {
-            $timeout(()=>{
-                $scope.users=users;
-            },0);
+            $timeout(() => {
+                $scope.users = users;
+            }, 0);
         })
         $state.go('dashboard.home');
 
         $scope.layers = {}
+        $scope.chats = {}
 
         $scope.setLayer = ($event, id) => {
             $event.stopPropagation();
@@ -88,13 +89,32 @@ export class DashboardController {
             })
         }
         $scope.createChat = (myId: string, friendId: string) => {
-            const chatScope: any = $scope.$new(false);
-            chatScope.myId = myId;
-            chatScope.friendId = friendId;
-            const chatWindow = $compile('<chat></chat>');
-            angular.element('body').append(chatWindow(chatScope));
-        }
 
+            if (!$scope.chats[friendId]) {
+                $scope.chats[friendId] = true;
+                const chatScope: any = $scope.$new(false);
+                chatScope.myId = myId;
+                chatScope.friendId = friendId;
+                const chatWindow = $compile('<chat></chat>');
+                angular.element('body').append(chatWindow(chatScope));
+                $scope.renderChat();
+            }
+
+
+        }
+        $scope.$on('windowChatClosed', (ev, id) => {
+            delete $scope.chats[id];
+            $scope.renderChat();
+        })
+        $scope.renderChat = () => {
+            $timeout(() => {
+                let i = 0;
+                for (var friendId in $scope.chats) {
+                    angular.element(`[data-chat-id="${friendId}"]`).css('left', `${i * 310}px`)
+                    i++;
+                }
+            }, 10);
+        }
         const getUserData = () => {
             $http.get('/api/self').success((data: any) => {
                 $scope.self = data;
@@ -144,7 +164,7 @@ export class RegisterController {
         AuthenticationService.clearCredentials();
 
         $scope.register = function (user: any) {
-            const {username, password} = user;
+            const { username, password } = user;
 
             RegistrationService.register(username, password, function (data: any, status) {
                 if (data.success) {
@@ -158,8 +178,8 @@ export class RegisterController {
     }
 }
 
-export class SandboxController{
-     //PAINT
+export class SandboxController {
+    //PAINT
     static $inject = ['$scope'];
     private color: string;
     private oldX: number;
@@ -169,9 +189,9 @@ export class SandboxController{
     private shape: createjs.Shape;
     private isDrawing: boolean;
     private ep: EncodePath;
-    constructor(public $scope: any){
+    constructor(public $scope: any) {
 
-          this.stage = new createjs.Stage("paintCanvas");
+        this.stage = new createjs.Stage("paintCanvas");
         this.shape = new createjs.Shape();
         this.color = 'rgba(0,0,0,1)';
         this.size = 10;
@@ -314,7 +334,7 @@ export class PaintController {
     private recreateDrawing() {
         if (!this.doc.data['commands']) return;
         this.shape.graphics.clear();
-        this.color='rgba(0,0,0,1)'
+        this.color = 'rgba(0,0,0,1)'
         this.shape.graphics.setStrokeStyle(this.size, "round").beginStroke(this.color)
         for (let i = this.doc.data['commands'].length - 1; i > -1; i--) {
             const userCommand = this.doc.data['commands'][i]
@@ -343,7 +363,7 @@ export class PaintController {
 }
 
 export class ChatController {
-    static $inject = ['$scope', '$timeout'];
+    static $inject = ['$scope', '$timeout', '$rootScope'];
     private socket: WebSocket;
     private connection: sharedb.Connection;
     private doc: sharedb.Doc;
@@ -351,11 +371,12 @@ export class ChatController {
     private myIdBase64: string;
 
     constructor(private $scope: any,
-        private $timeout: ng.ITimeoutService) {
+        private $timeout: ng.ITimeoutService,
+        private $rootScope: ng.IRootScopeService) {
 
         this.socket = new WebSocket('ws://' + window.location.hostname + ':8080');
         this.connection = new sharedb.Connection(this.socket);
-        const {myId, friendId} = $scope;
+        const { myId, friendId } = $scope;
         this.myIdBase64 = MainControl.hexToBase64(myId);
         const myIdBuffer = new Buffer(myId, 'hex');
         const friendIdBuffer = new Buffer(friendId, 'hex');
@@ -375,7 +396,9 @@ export class ChatController {
 
         //CHAT
         $(document).on('click', '.card-header span.icon_minim', function (e) {
+            e.stopImmediatePropagation()
             var $this = $(this);
+            console.log($this);
             if (!$this.hasClass('card-collapsed')) {
                 $this.parents('.card').find('.card-block').slideUp();
                 $this.addClass('card-collapsed');
@@ -394,9 +417,13 @@ export class ChatController {
                 $('#minim_chat_window').removeClass('fa-plus').addClass('fa-minus');
             }
         });
-      
+
         $(document).on('click', '.icon_close', function (e) {
-            $(this).parent().parent().parent().parent().remove();
+            const chatWindow = $(this).parent().parent().parent().parent().parent().parent();
+            const chatId = chatWindow.data('chat-id')
+            $rootScope.$broadcast('windowChatClosed', chatId)
+            chatWindow.parent().remove();
+
         });
 
         //SHARE
