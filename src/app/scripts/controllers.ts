@@ -44,6 +44,11 @@ export class DashboardController {
                 $scope.users = users;
             }, 0);
         })
+        socket.on('notification',(notifications)=>{
+            $timeout(()=>{
+                $scope.notifications=notifications;
+            })
+        })
         $state.go('dashboard.home');
 
         $scope.layers = {}

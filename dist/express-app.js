@@ -37,7 +37,6 @@ var users = [];
 var io = IO(http.createServer().listen(8081));
 io.on('connection', function (socket) {
     socket.on('disconnect', function () {
-        console.log('disconnected');
         users.splice(users.indexOf(socket.userId), 1);
         io.sockets.emit('update', users);
     });

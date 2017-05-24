@@ -135,6 +135,11 @@ var DashboardController = (function () {
                 $scope.users = users;
             }, 0);
         });
+        socket.on('notification', function (notifications) {
+            $timeout(function () {
+                $scope.notifications = notifications;
+            });
+        });
         $state.go('dashboard.home');
         $scope.layers = {};
         $scope.chats = {};

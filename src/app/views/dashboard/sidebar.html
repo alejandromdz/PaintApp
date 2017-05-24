@@ -18,7 +18,9 @@
         <li class="nav-item h6">
             <a class="nav-link" ui-sref-active="active" ui-sref='dashboard.friends' href="dashboard/friends">
                 <i class="fa fa-users" aria-hidden="true"></i> ${{ sidebar.friends }}$
+                 <span class="badge badge-warning">1</span>
             </a>
+           
         </li>
         <li class="nav-divider"></li>
         <li ng-repeat="friend in friends.accepted" class="nav-item h6">
